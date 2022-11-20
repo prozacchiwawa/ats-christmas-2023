@@ -1,14 +1,12 @@
 #include "share/atspre_staload.hats"
+
 staload UN = "prelude/SATS/unsafe.sats"
 staload "libats/SATS/dynarray.sats"
 staload _ = "libats/DATS/dynarray.dats"
 
-extern fun getchar (): int = "xgetchar"
-extern fun puts (s: string): size_t = "xputs"
-extern fun getcga (): [l:agz] (char @ l | ptr l) = "xgetcga"
-extern fun pokeb (p : ptr, into: int, w: int): void = "xpokeb"
-extern fun rand (): int = "xrand"
-extern fun textmode {l:agz} (pf: char @ l | p : ptr l): void = "xtextmode"
+#include "d_list_ent.hats"
+#include "geometry.hats"
+#include "system.hats"
 
 fn keep_running () : int =
   begin
