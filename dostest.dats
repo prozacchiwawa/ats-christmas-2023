@@ -39,7 +39,7 @@ implement main () = let
         var dle: struct_d_list_ent
       in
         dle.color := 0 ;
-        dle.at_x := 320 ;
+        dle.at_x := at ;
         dle :: make_nil<struct_d_list_ent> ()
       end
     else
@@ -59,10 +59,10 @@ implement main () = let
     if n > 0 then
       let
 	      val new_kb = keep_running ()
+        val y = rand () % 200
         val first_at = rand () % 40
         val first_struct = make_zero_element ()
-        val lst = (make_zero_element ()) :: (random_list_of_n_elements first_at 1)
-        val y = rand () % 200
+        val lst = (make_zero_element ()) :: (random_list_of_n_elements first_at 3)
       in
         display_from_list_to_scan_line cga y lst ;
         consume_list lst ;

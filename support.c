@@ -10,7 +10,7 @@ const int ZF = 0x40;
 const int PF = 0x04;
 const int CF = 0x01;
 
-char display_copy[16000] = { 0 };
+char display_copy[16384] = { 0 };
 
 int xgetchar() {
   __dpmi_regs regs;
@@ -44,9 +44,21 @@ char *xgetcga() {
 
 int fill[] = {
   0,
-  0x55555555,
-  0xaaaaaaaa,
-  0xffffffff
+  0x5555,
+  0xaaaa,
+  0xffff
+};
+
+int lowmask[] = {
+  0x0000,
+  0x00c0,
+  0x00f0,
+  0x00fc,
+  0x00ff,
+  0xc0ff,
+  0xf0ff,
+  0xfcff,
+  0xffff
 };
 
 #define UINT32_DISPLAY(AT) ((int *)(&display_copy[(AT)]))
@@ -60,35 +72,42 @@ void xwrite_color(char *cga, int y, int color, int upper_bound, int lower_bound)
 
   int upper_byte = upper_bound >> 2;
   int lower_byte = lower_bound >> 2;
-  int upper_bit = (upper_bound << 1) % 32;
-  int lower_bit = (lower_bound << 1) % 32;
-  int first_word = (lower_byte + 3) & ~3;
-  int last_word = (upper_byte + 3) & ~3;
-  int high_mask = (1 << upper_bit) - 1;
-  int low_mask = ~((1 << lower_bit) - 1);
-  int offset = y * 80 + first_word;
+  int upper_bit = (15 - ((upper_bound << 1) % 16)) ^ 8;
+  int lower_bit = (15 - ((lower_bound << 1) % 16)) ^ 8;
+  int first_word = lower_byte & ~1;
+  int last_word = upper_byte & ~1;
+  int high_mask = lowmask[upper_bound % 8];
+  int low_mask = ~lowmask[lower_bound % 8];
+  int offset;
+
+  if (y & 1) {
+    offset = (y >> 1) * 80 + first_word + 8192;
+  } else {
+    offset = (y >> 1) * 80 + first_word;
+  }
 
   if (first_word == last_word) {
     int the_mask = low_mask & high_mask;
-    int *ptr = UINT32_DISPLAY(offset);
-    int theword = (*ptr & ~the_mask) | fill_value & the_mask;
+    short *ptr = UINT32_DISPLAY(offset);
+    int theword = (*ptr & ~the_mask) | (fill_value & the_mask);
     *ptr = theword;
-    _farpokel(_dos_ds, UINT32_CGA(cga, offset), theword);
+    _farpokew(_dos_ds, UINT32_CGA(cga, offset), theword);
   } else {
-    int *ptr = UINT32_DISPLAY(offset);
-    int theword = (*ptr & ~low_mask) | fill_value & low_mask;
+    short *ptr = UINT32_DISPLAY(offset);
+    int theword = (*ptr & ~low_mask) | (fill_value & low_mask);
     *ptr = theword;
-    _farpokel(_dos_ds, UINT32_CGA(cga, offset), theword);
+    _farpokew(_dos_ds, UINT32_CGA(cga, offset), theword);
 
-    while (first_word < last_word - 4) {
-      ptr++; offset += 4; first_word += 4;
+    ptr++; offset += 2; first_word += 2;
+    while (first_word < last_word - 2) {
       *ptr = fill_value;
-      _farpokel(_dos_ds, UINT32_CGA(cga, offset), theword);
+      _farpokew(_dos_ds, UINT32_CGA(cga, offset), fill_value);
+      ptr++; offset += 2; first_word += 2;
     }
 
-    theword = (*ptr & ~high_mask) | fill_value & high_mask;
+    theword = (*ptr & ~high_mask) | (fill_value & high_mask);
     *ptr = theword;
-    _farpokel(_dos_ds, UINT32_CGA(cga, offset), theword);
+    _farpokew(_dos_ds, UINT32_CGA(cga, offset), theword);
   }
 }
 
