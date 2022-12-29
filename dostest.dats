@@ -7,6 +7,7 @@ staload _ = "libats/DATS/dynarray.dats"
 #include "list.hats"
 #include "system.hats"
 #include "d_list_ent.hats"
+#include "arraytry.hats"
 #include "display.hats"
 #include "geometry.hats"
 #include "appstate.hats"
@@ -22,36 +23,32 @@ fn keep_running () : int =
 implement main () = let
   val (pf | cga) = getcga ()
 
+  val (scanp | scanlines) = alloc_line_ptr ()
+
   fun {a : vt@ype} make_nil (): rclist_vt (a, 0) = rclist_vt_nil ()
 
   fun make_zero_element (): struct_d_list_ent =
     let
-      var dle: struct_d_list_ent
+      val dle = d_list_ent (0, 0, 0, 0)
     in
-      dle.color := 0;
-      dle.at_x := 0;
       dle
     end
 
   fun random_list_of_n_elements {x : int | 0 <= x} (at : int) (n : int(x)) : rclist_vt (struct_d_list_ent, (x+1)) =
     if n <= 0 then
       let
-        var dle: struct_d_list_ent
+        val dle = d_list_ent (0, at, 320, 0)
       in
-        dle.color := 0 ;
-        dle.at_x := at ;
         dle :: make_nil<struct_d_list_ent> ()
       end
     else
       let
-        var dle: struct_d_list_ent
         val r = rand ()
         val rand_inc = (r / 4) % 13
         val rand_color = r % 4
         val new_higher_x = at + rand_inc
+        val dle = d_list_ent (rand_color, at, 320, 0)
       in
-        dle.color := rand_color ;
-        dle.at_x := at ;
         dle :: (random_list_of_n_elements new_higher_x (n - 1))
       end
   
@@ -72,6 +69,7 @@ implement main () = let
       ()
 in
   loop_random_px 1 ;
+  free_line_ptr (scanp | scanlines) ;
   textmode (pf | cga) ;
   0 
 end
