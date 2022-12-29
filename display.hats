@@ -59,12 +59,6 @@ fn insert_into
        head : struct_d_list_ent,
        tail : !rclist_vt (struct_d_list_ent, x)
       ) : [y : int | 0 <= y] rclist_vt (struct_d_list_ent, y) = begin
-      println! ("weave_into_inner") ;
-      write_ent ('w', head) ;
-      write_ent ('n', new_span) ;
-      println! ("weave list") ;
-      write_list tail ;
-      println! ("weave go") ;
       if head.at_x = new_span.at_x then
         if head.until_x = new_span.until_x then
           if head.depth < new_span.depth then
@@ -117,8 +111,6 @@ fn insert_into
             val updated_head = d_list_ent (head.color, head.at_x, new_span.at_x, head.depth)
             val broken_head = d_list_ent (head.color, new_span.at_x, head.until_x, head.depth)
           in
-            write_ent ('U', updated_head) ;
-            write_ent ('B', broken_head) ;
             if broken_head.until_x <= broken_head.at_x then
               updated_head :: insert_into_inner (tail, new_span)
             else
@@ -145,16 +137,12 @@ fn insert_into
               insert_into_inner (tail, new_span)
             else
               begin
-                write_ent ('H', updated_head) ;
                 new_span :: updated_head :: copy_rest tail
               end
           end
     end
 
   in
-    println! ("insert_into_inner") ;
-    write_ent ('i', new_span) ;
-    write_list lst ;
     if new_span.until_x <= new_span.at_x then
       case+ lst of
       | rclist_vt_nil () => NIL
@@ -171,15 +159,11 @@ fn insert_into
           let
             val w = weave_into_inner (new_span, head, tail)
           in
-            println! ("weave =>") ;
-            write_list w ;
             w
           end
   end
 
   val result = insert_into_inner (lst, new_span)
 in
-  println! ("insert_into_inner =>") ;
-  write_list result ;
   result
 end

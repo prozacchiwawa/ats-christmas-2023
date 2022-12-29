@@ -99,7 +99,7 @@ void xwrite_color(char *cga, int y, int color, int upper_bound, int lower_bound)
     _farpokew(_dos_ds, UINT32_CGA(cga, offset), theword);
 
     ptr++; offset += 2; first_word += 2;
-    while (first_word < last_word - 2) {
+    while (first_word < last_word - 1) {
       *ptr = fill_value;
       _farpokew(_dos_ds, UINT32_CGA(cga, offset), fill_value);
       ptr++; offset += 2; first_word += 2;

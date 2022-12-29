@@ -36,6 +36,19 @@ end
 
 fn {a : vt@ype} make_nil (): rclist_vt (a, 0) = rclist_vt_nil ()
 
+fn make_display_list_1 (r : int) : [y : int | 0 <= y] rclist_vt (struct_d_list_ent, y) =
+let
+  val empty_list = (make_zero_element ()) :: NIL
+  val e1 = d_list_ent (1, 30, 100, 10) ;
+  val e2 = d_list_ent (2, 50 + r, 120, 7) ;
+  val lst = insert_into (empty_list, e1)
+  val lst2 = insert_into (lst, e2)
+in
+  consume_list lst ;
+  consume_list empty_list ;
+  lst2
+end
+
 fn run_cga () = let
   val (pf | cga) = getcga ()
 
@@ -61,8 +74,9 @@ fn run_cga () = let
 	      val new_kb = keep_running ()
         val empty_list = (make_zero_element ()) :: NIL
         val color = 1 + (rand () % 3)
-        val lst = insert_into (empty_list, random_element color)
-        val y = 100
+        val idx = rand () % 20
+        val y = 100 + idx
+        val lst = make_display_list_1 (idx) (* insert_into (empty_list, random_element color) *)
       in
         display_from_list_to_scan_line cga y lst ;
         consume_list lst ;
@@ -79,22 +93,13 @@ in
 end
 
 fn test_list_1 () = let
-  val empty_list = (make_zero_element ()) :: NIL
-  val e1 = d_list_ent (1, 30, 100, 10) ;
-  val e2 = d_list_ent (2, 60, 120, 7) ;
-  val lst = insert_into (empty_list, e1)
-  val lst2 = insert_into (lst, e2)
+  val lst2 = make_display_list_1 (4)
 in
-  write_ent ('A', e1) ;
-  write_ent ('B', e2) ;
-  println! ("final") ;
   write_list lst2 ;
   consume_list lst2 ;
-  consume_list lst ;
-  consume_list empty_list ;
   0
 end
 
 implement main () =
-  test_list_1 ()
-  (* run_cga () *)
+  (* test_list_1 () *)
+  run_cga ()
