@@ -20,27 +20,30 @@ fn keep_running () : int =
       0
   end
 
-implement main () = let
+fn make_zero_element (): struct_d_list_ent = let
+  val dle = d_list_ent (0, 0, 320, 100000)
+in
+  dle
+end
+
+fun random_element (color : int) : struct_d_list_ent = let
+  val depth = rand () % 1000
+  val start_x = rand () % 20
+  val end_x = 100 + rand () % 20
+in
+  d_list_ent (color, start_x, end_x, depth)
+end
+
+fn {a : vt@ype} make_nil (): rclist_vt (a, 0) = rclist_vt_nil ()
+
+fn run_cga () = let
   val (pf | cga) = getcga ()
 
   val (scanp | scanlines) = alloc_line_ptr ()
 
-  fun {a : vt@ype} make_nil (): rclist_vt (a, 0) = rclist_vt_nil ()
-
-  fun make_zero_element (): struct_d_list_ent =
-    let
-      val dle = d_list_ent (0, 0, 0, 0)
-    in
-      dle
-    end
-
-  fun random_list_of_n_elements {x : int | 0 <= x} (at : int) (n : int(x)) : rclist_vt (struct_d_list_ent, (x+1)) =
+  fun random_list_of_n_elements {x : int | 0 <= x} (at : int) (n : int(x)) : [k : int | 0 <= k] rclist_vt (struct_d_list_ent, k) =
     if n <= 0 then
-      let
-        val dle = d_list_ent (0, at, 320, 0)
-      in
-        dle :: make_nil<struct_d_list_ent> ()
-      end
+      make_nil<struct_d_list_ent> ()
     else
       let
         val r = rand ()
@@ -56,13 +59,14 @@ implement main () = let
     if n > 0 then
       let
 	      val new_kb = keep_running ()
-        val y = rand () % 200
-        val first_at = rand () % 40
-        val first_struct = make_zero_element ()
-        val lst = (make_zero_element ()) :: (random_list_of_n_elements first_at 3)
+        val empty_list = (make_zero_element ()) :: NIL
+        val color = 1 + (rand () % 3)
+        val lst = insert_into (empty_list, random_element color)
+        val y = 100
       in
         display_from_list_to_scan_line cga y lst ;
         consume_list lst ;
+        consume_list empty_list ;
         loop_random_px (new_kb) ;
       end
     else
@@ -73,3 +77,24 @@ in
   textmode (pf | cga) ;
   0 
 end
+
+fn test_list_1 () = let
+  val empty_list = (make_zero_element ()) :: NIL
+  val e1 = d_list_ent (1, 30, 100, 10) ;
+  val e2 = d_list_ent (2, 60, 120, 7) ;
+  val lst = insert_into (empty_list, e1)
+  val lst2 = insert_into (lst, e2)
+in
+  write_ent ('A', e1) ;
+  write_ent ('B', e2) ;
+  println! ("final") ;
+  write_list lst2 ;
+  consume_list lst2 ;
+  consume_list lst ;
+  consume_list empty_list ;
+  0
+end
+
+implement main () =
+  test_list_1 ()
+  (* run_cga () *)
