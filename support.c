@@ -113,20 +113,16 @@ void xwrite_color(char *cga, int y, int color, int upper_bound, int lower_bound)
 
 int xrand() { return rand(); }
 
-void **alloc_line_ptr() {
-  return calloc(sizeof(void *), 200);
+static void *scanlines[200] = { 0 };
+
+void preload_scanlines(void *ptr) {
+  for (int i = 0; i < 200; i++) {
+    scanlines[i] = ptr;
+  }
 }
 
-void free_line_ptr(void **p) {
-  free(p);
-}
-
-void store_line_ptr(void **p, int idx, void *ptr) {
-  p[idx] = ptr;
-}
-
-void *get_line_ptr(void **p, int idx, void *ptr) {
-  void *prev = p[idx];
-  p[idx] = ptr;
+void *get_line_ptr(int idx, void *ptr) {
+  void *prev = scanlines[idx];
+  scanlines[idx] = ptr;
   return prev;
 }

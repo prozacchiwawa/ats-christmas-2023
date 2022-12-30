@@ -7,7 +7,7 @@ staload _ = "libats/DATS/dynarray.dats"
 #include "list.hats"
 #include "system.hats"
 #include "d_list_ent.hats"
-#include "arraytry.hats"
+#include "triangle.hats"
 #include "display.hats"
 #include "geometry.hats"
 #include "appstate.hats"
@@ -49,10 +49,23 @@ in
   lst2
 end
 
+fn make_display_list_2 (r : int) : [y : int | 0 <= y] rclist_vt (struct_d_list_ent, y) =
+let
+  val empty_list = (make_zero_element ()) :: NIL
+  val e1 = d_list_ent (1, 30 + r, 100, 7) ;
+  val e2 = d_list_ent (2, 50, 120, 10) ;
+  val lst = insert_into (empty_list, e1)
+  val lst2 = insert_into (lst, e2)
+in
+  consume_list lst ;
+  consume_list empty_list ;
+  lst2
+end
+
 fn run_cga () = let
   val (pf | cga) = getcga ()
 
-  val (scanp | scanlines) = alloc_line_ptr ()
+  val _ = preload_scanlines NIL
 
   fun random_list_of_n_elements {x : int | 0 <= x} (at : int) (n : int(x)) : [k : int | 0 <= k] rclist_vt (struct_d_list_ent, k) =
     if n <= 0 then
@@ -67,7 +80,32 @@ fn run_cga () = let
       in
         dle :: (random_list_of_n_elements new_higher_x (n - 1))
       end
-  
+
+  fun make_random_triangle () = let
+    val ax = 10 + rand () % 300
+    val ay = 10 + rand () % 180
+    val bx = 10 + rand () % 300
+    val by = 10 + rand () % 180
+    val cx = 10 + rand () % 300
+    val cy = 10 + rand () % 180
+    val color = 1 + rand () % 3
+    val depth = 1 + rand () % 100
+  in
+    make_triangle (color, ax, ay, bx, by, cx, cy, depth)
+  end
+
+  fun display_scan_lines {n : int | 0 <= n} .<n>. (cga : ptr, y : int(n)): void =
+    if y = 0 then
+      ()
+    else
+      let
+        val old_list = get_line_ptr (y, NIL)
+      in
+        display_from_list_to_scan_line cga y old_list ;
+        consume_list old_list ;
+        display_scan_lines (cga, y - 1)
+      end
+
   fun loop_random_px (n: int) : void =
     if n > 0 then
       let
@@ -75,11 +113,9 @@ fn run_cga () = let
         val empty_list = (make_zero_element ()) :: NIL
         val color = 1 + (rand () % 3)
         val idx = rand () % 20
-        val y = 100 + idx
-        val lst = make_display_list_1 (idx) (* insert_into (empty_list, random_element color) *)
+        val () = make_random_triangle ()
       in
-        display_from_list_to_scan_line cga y lst ;
-        consume_list lst ;
+        display_scan_lines (cga, 199) ;
         consume_list empty_list ;
         loop_random_px (new_kb) ;
       end
@@ -87,7 +123,6 @@ fn run_cga () = let
       ()
 in
   loop_random_px 1 ;
-  free_line_ptr (scanp | scanlines) ;
   textmode (pf | cga) ;
   0 
 end

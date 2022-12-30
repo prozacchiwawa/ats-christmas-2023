@@ -167,3 +167,6 @@ fn insert_into
 in
   result
 end
+
+extern fun preload_scanlines (n : rclist_vt(struct_d_list_ent, 0)): void = "preload_scanlines"
+extern fun get_line_ptr {j : int | 0 <= j} {l:addr} (i: int, replacement: rclist_vt(struct_d_list_ent, j)): [k : int | 0 <= k] rclist_vt(struct_d_list_ent, k) = "get_line_ptr"
