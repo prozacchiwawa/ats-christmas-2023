@@ -7,8 +7,8 @@ staload _ = "libats/DATS/dynarray.dats"
 #include "list.hats"
 #include "system.hats"
 #include "d_list_ent.hats"
-#include "triangle.hats"
 #include "display.hats"
+#include "triangle.hats"
 #include "geometry.hats"
 #include "appstate.hats"
 
@@ -62,6 +62,19 @@ in
   lst2
 end
 
+fn make_random_triangle () = let
+  val ax = 10 + rand () % 300
+  val ay = 10 + rand () % 180
+  val bx = 10 + rand () % 300
+  val by = 10 + rand () % 180
+  val cx = 10 + rand () % 300
+  val cy = 10 + rand () % 180
+  val color = 1 + rand () % 3
+  val depth = 1 + rand () % 100
+in
+  make_triangle (color, ax, ay, bx, by, cx, cy, depth)
+end
+
 fn run_cga () = let
   val (pf | cga) = getcga ()
 
@@ -81,25 +94,12 @@ fn run_cga () = let
         dle :: (random_list_of_n_elements new_higher_x (n - 1))
       end
 
-  fun make_random_triangle () = let
-    val ax = 10 + rand () % 300
-    val ay = 10 + rand () % 180
-    val bx = 10 + rand () % 300
-    val by = 10 + rand () % 180
-    val cx = 10 + rand () % 300
-    val cy = 10 + rand () % 180
-    val color = 1 + rand () % 3
-    val depth = 1 + rand () % 100
-  in
-    make_triangle (color, ax, ay, bx, by, cx, cy, depth)
-  end
-
   fun display_scan_lines {n : int | 0 <= n} .<n>. (cga : ptr, y : int(n)): void =
     if y = 0 then
       ()
     else
       let
-        val old_list = get_line_ptr (y, NIL)
+        val old_list = get_line_ptr (y, make_zero_element () :: NIL)
       in
         display_from_list_to_scan_line cga y old_list ;
         consume_list old_list ;
@@ -110,14 +110,11 @@ fn run_cga () = let
     if n > 0 then
       let
 	      val new_kb = keep_running ()
-        val empty_list = (make_zero_element ()) :: NIL
         val color = 1 + (rand () % 3)
-        val idx = rand () % 20
         val () = make_random_triangle ()
       in
         display_scan_lines (cga, 199) ;
-        consume_list empty_list ;
-        loop_random_px (new_kb) ;
+        loop_random_px (new_kb)
       end
     else
       ()
@@ -135,6 +132,14 @@ in
   0
 end
 
+fn test_triangle_1 () = let
+  val () = make_random_triangle ()
+in
+  show_rasterize_info () ;
+  0
+end
+
 implement main () =
   (* test_list_1 () *)
+  (* test_triangle_1 () *)
   run_cga ()

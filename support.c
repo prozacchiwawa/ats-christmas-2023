@@ -70,6 +70,13 @@ void xwrite_color(char *cga, int y, int color, int upper_bound, int lower_bound)
     return;
   }
 
+  if (lower_bound < 0) {
+    lower_bound = 0;
+  }
+  if (upper_bound > 320) {
+    upper_bound = 320;
+  }
+
   int upper_byte = upper_bound >> 2;
   int lower_byte = lower_bound >> 2;
   int upper_bit = (15 - ((upper_bound << 1) % 16)) ^ 8;
