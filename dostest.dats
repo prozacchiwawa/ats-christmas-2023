@@ -8,20 +8,21 @@ staload _ = "libats/DATS/dynarray.dats"
 #include "system.hats"
 #include "d_list_ent.hats"
 #include "display.hats"
-#include "triangle.hats"
 #include "geometry.hats"
+#include "triangle.hats"
 #include "appstate.hats"
 
-fn keep_running () : int =
-  begin
-    if (getchar () % 256) != 0x1b then
-      1
+fn keep_running () : int = let
+    val gc = getchar ()
+in
+    if (gc % 256) != 0x1b then
+      gc % 256
     else
-      0
-  end
+      (0 - 1)
+end
 
 fn make_zero_element (): struct_d_list_ent = let
-  val dle = d_list_ent (0, 0, 320, 100000)
+  val dle = d_list_ent (0, 0, 320, 100000000)
 in
   dle
 end
@@ -75,24 +76,18 @@ in
   make_triangle (color, ax, ay, bx, by, cx, cy, depth)
 end
 
-fn run_cga () = let
+fn m_500 (): int = 50000 * (0 - 1)
+
+fn run_cga
+   {st: int | 0 <= st}
+   ( max_tri: int(st),
+     last_vtx: int,
+     vert : !arrszref(struct_vertex),
+     tri : !arrszref(struct_triangle)
+   ) : void = let
   val (pf | cga) = getcga ()
 
   val _ = preload_scanlines NIL
-
-  fun random_list_of_n_elements {x : int | 0 <= x} (at : int) (n : int(x)) : [k : int | 0 <= k] rclist_vt (struct_d_list_ent, k) =
-    if n <= 0 then
-      make_nil<struct_d_list_ent> ()
-    else
-      let
-        val r = rand ()
-        val rand_inc = (r / 4) % 13
-        val rand_color = r % 4
-        val new_higher_x = at + rand_inc
-        val dle = d_list_ent (rand_color, at, 320, 0)
-      in
-        dle :: (random_list_of_n_elements new_higher_x (n - 1))
-      end
 
   fun display_scan_lines {n : int | 0 <= n} .<n>. (cga : ptr, y : int(n)): void =
     if y = 0 then
@@ -106,22 +101,34 @@ fn run_cga () = let
         display_scan_lines (cga, y - 1)
       end
 
-  fun loop_random_px (n: int) : void =
-    if n > 0 then
+  val _ = display_scan_lines (cga, 199)
+
+  fun loop_random_px
+    ( vtx : !arrszref(struct_vertex),
+      tri : !arrszref(struct_triangle),
+      dist : int,
+      n : int
+    ) : void =
+    if n >= 0 then
       let
 	      val new_kb = keep_running ()
-        val color = 1 + (rand () % 3)
-        val () = make_random_triangle ()
+        val new_dist =
+            if new_kb = 119 then
+                dist + 10000
+            else if new_kb = 115 then
+                dist - 10000
+            else
+                dist
       in
+        draw_triangles (max_tri, last_vtx, new_dist, vtx, tri) ;
         display_scan_lines (cga, 199) ;
-        loop_random_px (new_kb)
+        loop_random_px (vtx, tri, new_dist, new_kb)
       end
     else
       ()
 in
-  loop_random_px 1 ;
-  textmode (pf | cga) ;
-  0 
+  loop_random_px (vert, tri, 300000, 1) ;
+  textmode (pf | cga)
 end
 
 fn test_list_1 () = let
@@ -133,13 +140,36 @@ in
 end
 
 fn test_triangle_1 () = let
+  val () = preload_scanlines NIL
+  val color = 1 + (rand () % 3)
   val () = make_random_triangle ()
+  val () = make_random_triangle ()
+  val test_list = get_line_ptr (100, make_zero_element () :: NIL)
 in
-  show_rasterize_info () ;
+  println! ("line 100");
+  write_list test_list ;
+  consume_list test_list ;
   0
 end
 
-implement main () =
-  (* test_list_1 () *)
-  (* test_triangle_1 () *)
-  run_cga ()
+implement main () = let
+    val vert =
+        (arrszref)$arrpsz{struct_vertex}(
+            vertex (m_500(), 0, m_500()),
+            vertex (m_500(), 0, 50000),
+            vertex (50000, 0, m_500()),
+            vertex (50000, 0, 50000),
+            vertex (0, 50000, 0)
+        )
+
+    val tri =
+        (arrszref)$arrpsz{struct_triangle}(
+            tri (0, 1, 4, 1),
+            tri (2, 3, 4, 2),
+            tri (0, 2, 4, 1),
+            tri (1, 3, 4, 3)
+        )
+in
+    run_cga (3, 4, vert, tri) ;
+    0
+end

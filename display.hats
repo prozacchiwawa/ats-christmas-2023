@@ -34,19 +34,26 @@ in
   loop_over_ents lst
 end
 
-fn insert_into
+fn copy_rest
   {x : int | 0 <= x}
-  (lst : !rclist_vt (struct_d_list_ent, x),
-   new_span : struct_d_list_ent
-  ) : [y : int | 0 <= y] rclist_vt (struct_d_list_ent, y) = let
-
-  fun copy_rest
+  (lst : !rclist_vt (struct_d_list_ent, x)
+  ) : rclist_vt (struct_d_list_ent, x) = let
+  fun cr
     {x : int | 0 <= x}
     (lst : !rclist_vt (struct_d_list_ent, x)
     ) : rclist_vt (struct_d_list_ent, x) =
     case+ lst of
     | rclist_vt_nil () => NIL
-    | rclist_vt_cons (head, tail) => head :: copy_rest tail
+    | rclist_vt_cons (head, tail) => head :: cr tail
+in
+  cr lst
+end
+
+fn insert_into
+  {x : int | 0 <= x}
+  (lst : !rclist_vt (struct_d_list_ent, x),
+   new_span : struct_d_list_ent
+  ) : [y : int | 0 <= y] rclist_vt (struct_d_list_ent, y) = let
 
   fun insert_into_inner
     {x : int | 0 <= x}

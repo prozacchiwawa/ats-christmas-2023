@@ -87,7 +87,7 @@ in
     let
       val ac_y_pct = (65536 * (by - ay)) / (cy - ay)
       val cx_at_y = ax + ((ac_y_pct * (cx - ax)) / 65536)
-    
+
       fun rasterize_lines {k : int | 0 <= k} .<k>. (color : int, depth : int, uy : int, ly : int, lux : int, llx : int, rux : int, rlx : int, max_count : int(k)) = let
         val mid_lx = (lux + llx) / 2
         val mid_rx = (rux + rlx) / 2
@@ -121,6 +121,44 @@ in
       rasterize_lines (color, depth, ay, by, ax, bx, ax, cx_at_y, 200) ;
       rasterize_lines (color, depth, by, cy, bx, cx, cx_at_y, cx, 200)
     end
+end
+
+fn draw_triangles
+   {st : int | 0 <= st}
+  (  start_tri: int(st),
+     last_vtx: int,
+     dist: int,
+     vtx: !arrszref(struct_vertex),
+     tri: !arrszref(struct_triangle)
+  ): void = let
+  fun do_one_triangle
+    {idx : int | 0 <= idx}
+    .<idx>.
+    ( vtx: !arrszref(struct_vertex),
+      tri: !arrszref(struct_triangle),
+      n : int(idx)
+    ): void = let
+
+    val dcos = 32700
+    val dsin = 14380
+
+    val the_tri = get_triangle (tri, n)
+    val the_tri_a : int = g1ofg0_int (the_tri.a)
+    val the_tri_b : int = g1ofg0_int (the_tri.b)
+    val the_tri_c : int = g1ofg0_int (the_tri.c)
+    val vtx_a : struct_vertex = transform_vtx (dcos, dsin, dist, 30000, get_any_vertex (last_vtx, vtx, the_tri_a))
+    val vtx_b : struct_vertex = transform_vtx (dcos, dsin, dist, 30000, get_any_vertex (last_vtx, vtx, the_tri_b))
+    val vtx_c : struct_vertex = transform_vtx (dcos, dsin, dist, 30000, get_any_vertex (last_vtx, vtx, the_tri_c))
+    val depth = (vtx_a.z + vtx_b.z + vtx_c.z) / 3
+    val _ = make_triangle (the_tri.color, vtx_a.x, vtx_a.y, vtx_b.x, vtx_b.y, vtx_c.x, vtx_c.y, depth)
+  in
+    if n <= 0 then
+      ()
+    else
+      do_one_triangle (vtx, tri, (n - 1))
+  end
+in
+  do_one_triangle (vtx, tri, start_tri)
 end
 
 fn show_rasterize_info () = let
