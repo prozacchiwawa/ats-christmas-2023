@@ -36,7 +36,11 @@ void xtextmode(char *cga) {
 char *xgetcga() {
    __dpmi_regs regs;
 
-   regs.x.ax = 0x0005;
+   regs.x.ax = 0x0004;
+   __dpmi_int (0x10, &regs);
+
+   regs.x.ax = 0x0b00;
+   regs.x.bx = 0x0100;
    __dpmi_int (0x10, &regs);
 
    return (char *)0xb8000;
