@@ -116,8 +116,8 @@ in
               ()
           end
       end
-
     in
+      insert_raster (color, depth, decomp.by, decomp.bx, cx_at_by) ;
       rasterize_lines (color, depth, decomp.ay, decomp.by, decomp.ax, decomp.bx, decomp.ax, cx_at_by, 200) ;
       rasterize_lines (color, depth, decomp.by, decomp.cy, decomp.bx, decomp.cx, cx_at_by, decomp.cx, 200)
     end
