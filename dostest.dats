@@ -63,13 +63,13 @@ in
   lst2
 end
 
-fn make_random_triangle () = let
-  val ax = 10 + rand () % 300
-  val ay = 10 + rand () % 180
-  val bx = 10 + rand () % 300
-  val by = 10 + rand () % 180
-  val cx = 10 + rand () % 300
-  val cy = 10 + rand () % 180
+fn make_random_triangle (n : int) = let
+  val ax = 160 (* 10 + rand () % 300 *)
+  val ay = 70 (* 10 + rand () % 180 *)
+  val bx = 10 (* 10 + rand () % 300 *)
+  val by = 20 + (n % 160) (* 10 + rand () % 180 *)
+  val cx = 310 (* 10 + rand () % 300 *)
+  val cy = 140 (* 10 + rand () % 180 *)
   val color = 1 + rand () % 3
   val depth = 1 + rand () % 100
 in
@@ -107,7 +107,8 @@ fn run_cga
     ( vtx : !arrszref(struct_vertex),
       tri : !arrszref(struct_triangle),
       dist : int,
-      n : int
+      n : int,
+      y : int
     ) : void =
     if n >= 0 then
       let
@@ -121,13 +122,14 @@ fn run_cga
                 dist
       in
         draw_triangles (max_tri, last_vtx, new_dist, vtx, tri) ;
+        (* make_random_triangle y ; *)
         display_scan_lines (cga, 199) ;
-        loop_random_px (vtx, tri, new_dist, new_kb)
+        loop_random_px (vtx, tri, new_dist, new_kb, y + 1)
       end
     else
       ()
 in
-  loop_random_px (vert, tri, 300000, 1) ;
+  loop_random_px (vert, tri, 300000, 1, 0) ;
   textmode (pf | cga)
 end
 
@@ -142,8 +144,8 @@ end
 fn test_triangle_1 () = let
   val () = preload_scanlines NIL
   val color = 1 + (rand () % 3)
-  val () = make_random_triangle ()
-  val () = make_random_triangle ()
+  val () = make_random_triangle 32
+  val () = make_random_triangle 64
   val test_list = get_line_ptr (100, make_zero_element () :: NIL)
 in
   println! ("line 100");

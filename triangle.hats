@@ -81,12 +81,12 @@ end
 fn make_triangle (color : int, ax : int, ay : int, bx : int, by : int, cx : int, cy : int, depth : int) : void = let
   val decomp = decompose_triangle (ax, ay, bx, by, cx, cy)
 in
-  if cy = ay then
+  if decomp.cy = decomp.ay then
     ()
   else
     let
-      val ac_y_pct = (65536 * (by - ay)) / (cy - ay)
-      val cx_at_y = ax + ((ac_y_pct * (cx - ax)) / 65536)
+      val ac_y_pct = (65536 * (decomp.by - decomp.ay)) / (decomp.cy - decomp.ay)
+      val cx_at_by = decomp.ax + ((ac_y_pct * (decomp.cx - decomp.ax)) / 65536)
 
       fun rasterize_lines {k : int | 0 <= k} .<k>. (color : int, depth : int, uy : int, ly : int, lux : int, llx : int, rux : int, rlx : int, max_count : int(k)) = let
         val mid_lx = (lux + llx) / 2
@@ -118,8 +118,8 @@ in
       end
 
     in
-      rasterize_lines (color, depth, ay, by, ax, bx, ax, cx_at_y, 200) ;
-      rasterize_lines (color, depth, by, cy, bx, cx, cx_at_y, cx, 200)
+      rasterize_lines (color, depth, decomp.ay, decomp.by, decomp.ax, decomp.bx, decomp.ax, cx_at_by, 200) ;
+      rasterize_lines (color, depth, decomp.by, decomp.cy, decomp.bx, decomp.cx, cx_at_by, decomp.cx, 200)
     end
 end
 
@@ -139,8 +139,8 @@ fn draw_triangles
       n : int(idx)
     ): void = let
 
-    val dcos = 32700
-    val dsin = 14380
+    val dcos = 46341
+    val dsin = 46341
 
     val the_tri = get_triangle (tri, n)
     val the_tri_a : int = g1ofg0_int (the_tri.a)
