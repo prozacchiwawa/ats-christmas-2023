@@ -50,7 +50,11 @@ int fill[] = {
   0,
   0x5555,
   0xaaaa,
-  0xffff
+  0xffff,
+  0xbbbb,
+  0x1111,
+  0x2222,
+  0x3333,
 };
 
 int lowmask[] = {
@@ -69,7 +73,7 @@ int lowmask[] = {
 #define UINT32_CGA(P,AT) (((int)(P)) + (AT))
 
 void xwrite_color(char *cga, int y, int color, int upper_bound, int lower_bound) {
-  int fill_value = fill[color % 4];
+  int fill_value = fill[color % 8];
   if (upper_bound <= lower_bound) {
     return;
   }
@@ -93,6 +97,7 @@ void xwrite_color(char *cga, int y, int color, int upper_bound, int lower_bound)
 
   if (y & 1) {
     offset = (y >> 1) * 80 + first_word + 8192;
+    fill_value = ((fill_value | fill_value << 16) >> 2) & 0xffff;
   } else {
     offset = (y >> 1) * 80 + first_word;
   }

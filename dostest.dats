@@ -105,33 +105,43 @@ fn run_cga
 
   val _ = display_scan_lines (cga, 199)
 
+  fun interp_key (new_kb: int, dist: int, angle: int): (int, int) =
+      if new_kb = 119 then
+          if dist > 100000 then
+              (dist - 10000, angle)
+          else
+              (dist, angle)
+      else if new_kb = 115 then
+          (dist + 10000, angle)
+      else if new_kb = 97 then
+          (dist, (angle + 251) % 256)
+      else if new_kb = 100 then
+          (dist, angle + 5)
+      else
+          (dist, angle)
+
   fun loop_random_px
     ( vtx : !arrszref(struct_vertex),
       tri : !arrszref(struct_triangle),
       dist : int,
+      angle : int,
       n : int,
       y : int
     ) : void =
     if n >= 0 then
       let
 	      val new_kb = keep_running ()
-        val new_dist =
-            if new_kb = 119 then
-                dist + 10000
-            else if new_kb = 115 then
-                dist - 10000
-            else
-                dist
+        val (new_dist, new_angle) = interp_key (new_kb, dist, angle)
       in
-        draw_triangles (max_tri, last_vtx, new_dist, vtx, tri) ;
+        draw_triangles (max_tri, last_vtx, new_dist, new_angle, vtx, tri) ;
         (* make_random_triangle y ; *)
         display_scan_lines (cga, 199) ;
-        loop_random_px (vtx, tri, new_dist, new_kb, y + 1)
+        loop_random_px (vtx, tri, new_dist, new_angle, new_kb, y + 1)
       end
     else
       ()
 in
-  loop_random_px (vert, tri, 300000, 1, 0) ;
+  loop_random_px (vert, tri, 300000, 13, 1, 0) ;
   textmode (pf | cga)
 end
 
@@ -169,79 +179,49 @@ implement main () = let
             vertex(2749, 0, m1() * 4763),
             vertex(0, 32000, 0),
             vertex(21184, 6700, 8956),
-            vertex(19422, 10150, 2231),
+            vertex(19526, 10150, m1() * 953),
             vertex(0, 32000, 0),
-            vertex(12979, 6700, 18987),
-            vertex(15132, 10150, 12377),
+            vertex(6205, 6700, 22146),
+            vertex(12920, 10150, 14672),
             vertex(0, 32000, 0),
-            vertex(653, 6700, 22990),
-            vertex(6038, 10150, 18594),
+            vertex(m1() * 13446, 6700, 18660),
+            vertex(m1() * 3415, 10150, 19249),
             vertex(0, 32000, 0),
-            vertex(m1() * 11880, 6700, 19694),
-            vertex(m1() * 4973, 10150, 18906),
+            vertex(m1() * 22972, 6700, 1121),
+            vertex(m1() * 17179, 10150, 9331),
             vertex(0, 32000, 0),
-            vertex(m1() * 20641, 6700, 10144),
-            vertex(m1() * 14405, 10150, 13216),
-            vertex(0, 32000, 0),
-            vertex(m1() * 22849, 6700, m1() * 2625),
-            vertex(m1() * 19264, 10150, 3330),
-            vertex(0, 32000, 0),
-            vertex(m1() * 17802, 6700, m1() * 14562),
+            vertex(m1() * 15200, 6700, m1() * 17261),
             vertex(m1() * 18006, 10150, m1() * 7613),
             vertex(0, 32000, 0),
-            vertex(m1() * 7103, 6700, m1() * 21875),
-            vertex(m1() * 11032, 10150, m1() * 16139),
+            vertex(4018, 6700, m1() * 22646),
+            vertex(m1() * 5274, 10150, m1() * 18824),
             vertex(0, 32000, 0),
-            vertex(5850, 6700, m1() * 22243),
-            vertex(m1() * 555, 10150, m1() * 19542),
-            vertex(0, 32000, 0),
-            vertex(16947, 6700, m1() * 15549),
-            vertex(10098, 10150, m1() * 16739),
-            vertex(0, 32000, 0),
-            vertex(22663, 6700, m1() * 3918),
-            vertex(17545, 10150, m1() * 8623),
+            vertex(20210, 6700, m1() * 10978),
+            vertex(11429, 10150, m1() * 15861),
             vertex(0, 43000, 0),
             vertex(16809, 24300, 2540),
-            vertex(14164, 26850, m1() * 2857),
+            vertex(12828, 26850, m1() * 6651),
             vertex(0, 43000, 0),
-            vertex(11243, 24300, 12750),
-            vertex(12687, 26850, 6915),
+            vertex(2778, 24300, 16771),
+            vertex(10289, 26850, 10145),
             vertex(0, 43000, 0),
-            vertex(417, 24300, 16994),
-            vertex(5273, 26850, 13453),
+            vertex(m1() * 15092, 24300, 7824),
+            vertex(m1() * 6468, 26850, 12921),
             vertex(0, 43000, 0),
-            vertex(m1() * 10604, 24300, 13286),
-            vertex(m1() * 4607, 26850, 13695),
-            vertex(0, 43000, 0),
-            vertex(m1() * 16664, 24300, 3361),
-            vertex(m1() * 12333, 26850, 7529),
-            vertex(0, 43000, 0),
-            vertex(m1() * 14926, 24300, m1() * 8136),
+            vertex(m1() * 12105, 24300, m1() * 11935),
             vertex(m1() * 14287, 26850, m1() * 2159),
             vertex(0, 43000, 0),
-            vertex(m1() * 6204, 24300, m1() * 15827),
-            vertex(m1() * 9557, 26850, m1() * 10838),
-            vertex(0, 43000, 0),
-            vertex(5420, 24300, m1() * 16112),
-            vertex(m1() * 354, 26850, m1() * 14445),
-            vertex(0, 43000, 0),
-            vertex(14509, 24300, m1() * 8858),
-            vertex(9013, 26850, m1() * 11293),
+            vertex(7610, 24300, m1() * 15201),
+            vertex(m1() * 2361, 26850, m1() * 14255),
             vertex(0, 48000, 0),
             vertex(m1() * 5553, 35900, 9495),
-            vertex(925, 37550, 9304),
+            vertex(4629, 37550, 8123),
             vertex(0, 48000, 0),
-            vertex(m1() * 10746, 35900, m1() * 2347),
-            vertex(m1() * 8562, 37550, 3755),
+            vertex(m1() * 5446, 35900, m1() * 9556),
+            vertex(m1() * 9349, 37550, m1() * 52),
             vertex(0, 48000, 0),
-            vertex(m1() * 1088, 35900, m1() * 10946),
-            vertex(m1() * 6217, 37550, m1() * 6983),
-            vertex(0, 48000, 0),
-            vertex(10073, 35900, m1() * 4417),
+            vertex(10999, 35900, 61),
             vertex(4720, 37550, m1() * 8071),
-            vertex(0, 48000, 0),
-            vertex(7314, 35900, 8215),
-            vertex(9134, 37550, 1995),
             vertex(0, 51000, m1() * 1125),
             vertex(0, 51000, 1125),
             vertex(7500, 51000, 0),
@@ -258,84 +238,64 @@ implement main () = let
 
     val tri =
         (arrszref)$arrpsz{struct_triangle}(
-            tri (1, 2, 3, 2),
-            tri (1, 3, 4, 2),
-            tri (1, 4, 5, 2),
-            tri (1, 5, 6, 2),
-            tri (1, 6, 7, 2),
-            tri (1, 7, 2, 2),
-            tri (38, 9, 10, 1),
-            tri (38, 9, 13, 1),
-            tri (38, 12, 13, 1),
-            tri (38, 12, 16, 1),
-            tri (38, 15, 16, 1),
-            tri (38, 15, 19, 1),
-            tri (38, 18, 19, 1),
-            tri (38, 18, 22, 1),
-            tri (38, 21, 22, 1),
-            tri (38, 21, 25, 1),
-            tri (38, 24, 25, 1),
-            tri (38, 24, 28, 1),
-            tri (38, 27, 28, 1),
-            tri (38, 27, 31, 1),
-            tri (38, 30, 31, 1),
-            tri (38, 30, 34, 1),
-            tri (38, 33, 34, 1),
-            tri (38, 33, 37, 1),
-            tri (38, 36, 37, 1),
-            tri (38, 36, 40, 1),
-            tri (38, 39, 40, 1),
-            tri (38, 39, 10, 1),
-            tri (65, 42, 43, 1),
-            tri (65, 42, 46, 1),
-            tri (65, 45, 46, 1),
-            tri (65, 45, 49, 1),
-            tri (65, 48, 49, 1),
-            tri (65, 48, 52, 1),
-            tri (65, 51, 52, 1),
-            tri (65, 51, 55, 1),
-            tri (65, 54, 55, 1),
-            tri (65, 54, 58, 1),
-            tri (65, 57, 58, 1),
-            tri (65, 57, 61, 1),
-            tri (65, 60, 61, 1),
-            tri (65, 60, 64, 1),
-            tri (65, 63, 64, 1),
-            tri (65, 63, 67, 1),
-            tri (65, 66, 67, 1),
-            tri (65, 66, 43, 1),
-            tri (80, 69, 70, 1),
-            tri (80, 69, 73, 1),
-            tri (80, 72, 73, 1),
-            tri (80, 72, 76, 1),
-            tri (80, 75, 76, 1),
-            tri (80, 75, 79, 1),
-            tri (80, 78, 79, 1),
-            tri (80, 78, 82, 1),
-            tri (80, 81, 82, 1),
-            tri (80, 81, 70, 1),
-            tri (83, 85, 86, 3),
-            tri (83, 85, 88, 3),
-            tri (84, 85, 86, 3),
-            tri (84, 85, 88, 3),
-            tri (83, 87, 88, 3),
-            tri (83, 87, 90, 3),
-            tri (84, 87, 88, 3),
-            tri (84, 87, 90, 3),
-            tri (83, 89, 90, 3),
-            tri (83, 89, 92, 3),
-            tri (84, 89, 90, 3),
-            tri (84, 89, 92, 3),
-            tri (83, 91, 92, 3),
-            tri (83, 91, 94, 3),
-            tri (84, 91, 92, 3),
-            tri (84, 91, 94, 3),
-            tri (83, 93, 94, 3),
-            tri (83, 93, 86, 3),
-            tri (84, 93, 94, 3),
-            tri (84, 93, 86, 3)
+            tri(1, 2, 3, 2),
+            tri(1, 3, 4, 2),
+            tri(1, 4, 5, 2),
+            tri(1, 5, 6, 2),
+            tri(1, 6, 7, 2),
+            tri(1, 7, 2, 2),
+            tri(26, 10, 9, 1),
+            tri(26, 9, 13, 5),
+            tri(26, 13, 12, 1),
+            tri(26, 12, 16, 5),
+            tri(26, 16, 15, 1),
+            tri(26, 15, 19, 5),
+            tri(26, 19, 18, 1),
+            tri(26, 18, 22, 5),
+            tri(26, 22, 21, 1),
+            tri(26, 21, 25, 5),
+            tri(26, 25, 24, 1),
+            tri(26, 24, 28, 5),
+            tri(26, 28, 27, 1),
+            tri(26, 27, 10, 5),
+            tri(41, 31, 30, 1),
+            tri(41, 30, 34, 5),
+            tri(41, 34, 33, 1),
+            tri(41, 33, 37, 5),
+            tri(41, 37, 36, 1),
+            tri(41, 36, 40, 5),
+            tri(41, 40, 39, 1),
+            tri(41, 39, 43, 5),
+            tri(41, 43, 42, 1),
+            tri(41, 42, 31, 5),
+            tri(50, 46, 45, 1),
+            tri(50, 45, 49, 5),
+            tri(50, 49, 48, 1),
+            tri(50, 48, 52, 5),
+            tri(50, 52, 51, 1),
+            tri(50, 51, 46, 5),
+            tri(53, 56, 55, 3),
+            tri(53, 58, 57, 3),
+            tri(53, 60, 59, 3),
+            tri(53, 62, 61, 3),
+            tri(53, 64, 63, 3),
+            tri(53, 55, 58, 4),
+            tri(53, 57, 60, 4),
+            tri(53, 59, 62, 4),
+            tri(53, 61, 64, 4),
+            tri(53, 63, 56, 4),
+            tri(54, 55, 56, 3),
+            tri(54, 57, 58, 3),
+            tri(54, 59, 60, 3),
+            tri(54, 61, 62, 3),
+            tri(54, 63, 64, 3),
+            tri(54, 58, 55, 4),
+            tri(54, 60, 57, 4),
+            tri(54, 62, 59, 4),
+            tri(54, 64, 61, 4),
+            tri(54, 56, 63, 4)
         )
 in
-    run_cga (75, 94, vert, tri) ;
+    run_cga (55, 65, vert, tri) ;
     0
 end

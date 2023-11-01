@@ -18,15 +18,11 @@ in
   loop_over_ents lst
 end
 
-fn write_ent (c : char, head : struct_d_list_ent) =
-  println! (c, " ", head.color, " at_x ", head.at_x, " until_x ", head.until_x, " depth ", head.depth)
-
 fn write_list {x : nat} (lst : !rclist_vt (struct_d_list_ent, x)): void = let
   fun loop_over_ents {k : nat} .<k>. (lst : !rclist_vt (struct_d_list_ent, k)) : void =
     case+ lst of
     | NIL => ()
     | head :: tail => begin
-      write_ent ('>', head) ;
       loop_over_ents tail
     end
 
@@ -68,7 +64,7 @@ fn insert_into
       ) : [y : int | 0 <= y] rclist_vt (struct_d_list_ent, y) = begin
       if head.at_x = new_span.at_x then
         if head.until_x = new_span.until_x then
-          if head.depth < new_span.depth then
+          if head.depth > new_span.depth then
             head :: (copy_rest tail)
           else
             new_span :: (copy_rest tail)
