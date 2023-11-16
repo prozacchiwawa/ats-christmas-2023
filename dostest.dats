@@ -76,8 +76,6 @@ in
   make_triangle (color, ax, ay, bx, by, cx, cy, depth)
 end
 
-fn m_500 (): int = 50000 * (0 - 1)
-
 fn m1 (): int = (0 - 1)
 
 fn run_cga
