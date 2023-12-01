@@ -103,25 +103,34 @@ fn run_cga
 
   val _ = display_scan_lines (cga, 199)
 
-  fun interp_key (new_kb: int, dist: int, angle: int): (int, int) =
+  fun interp_key (new_kb: int, location: struct_vertex, angle: int): (struct_vertex, int) =
       if new_kb = 119 then
-          if dist > 100000 then
-              (dist - 10000, angle)
-          else
-              (dist, angle)
+          let
+            val (dsin, dcos) = get_sin_cos (angle)
+            val new_x = location.x - dsin * 3
+            val new_z = location.z - dcos * 3
+          in
+            (vertex(new_x, location.y, new_z), angle)
+          end
       else if new_kb = 115 then
-          (dist + 10000, angle)
-      else if new_kb = 97 then
-          (dist, (angle + 251) % 256)
+          let
+            val (dsin, dcos) = get_sin_cos (angle)
+            val new_x = location.x + dsin * 3
+            val new_z = location.z + dcos * 3
+          in
+            (vertex(new_x, location.y, new_z), angle)
+          end
       else if new_kb = 100 then
-          (dist, angle + 5)
+          (location, (angle + 248) % 256)
+      else if new_kb = 97 then
+          (location, (angle + 12) % 256)
       else
-          (dist, angle)
+          (location, angle)
 
   fun loop_random_px
     ( vtx : !arrszref(struct_vertex),
       tri : !arrszref(struct_triangle),
-      dist : int,
+      location : struct_vertex,
       angle : int,
       n : int,
       y : int
@@ -129,17 +138,18 @@ fn run_cga
     if n >= 0 then
       let
 	      val new_kb = keep_running ()
-        val (new_dist, new_angle) = interp_key (new_kb, dist, angle)
+        val (new_location, new_angle) = interp_key (new_kb, location, angle)
       in
-        draw_triangles (max_tri, last_vtx, new_dist, new_angle, vtx, tri) ;
+        draw_triangles (max_tri, last_vtx, new_location, new_angle, vtx, tri) ;
         (* make_random_triangle y ; *)
         display_scan_lines (cga, 199) ;
-        loop_random_px (vtx, tri, new_dist, new_angle, new_kb, y + 1)
+        // println!(new_location.x, " ", new_location.z, " a ", new_angle) ;
+        loop_random_px (vtx, tri, new_location, new_angle, new_kb, y + 1)
       end
     else
       ()
 in
-  loop_random_px (vert, tri, 300000, 13, 1, 0) ;
+  loop_random_px (vert, tri, vertex(15, 3000, 20000), 0, 1, 0) ;
   textmode (pf | cga)
 end
 
@@ -168,58 +178,58 @@ implement main () = let
     val vert =
         (arrszref)$arrpsz{struct_vertex}(
         vertex(0, 0, 0),
-        vertex(0, 44000, 0),
-        vertex(5500, 0, 0),
-        vertex(2750, 0, 4763),
-        vertex(m1() * 2749, 0, 4763),
-        vertex(m1() * 5499, 0, 0),
-        vertex(m1() * 2750, 0, m1() * 4763),
-        vertex(2749, 0, m1() * 4763),
-        vertex(0, 30000, 0),
-        vertex(19342, 6900, 8177),
-        vertex(17828, 10050, m1() * 870),
-        vertex(5666, 6900, 20221),
-        vertex(11796, 10050, 13396),
-        vertex(m1() * 12276, 6900, 17037),
-        vertex(m1() * 3118, 10050, 17575),
-        vertex(m1() * 20975, 6900, 1024),
-        vertex(m1() * 15685, 10050, 8520),
-        vertex(m1() * 13878, 6900, m1() * 15760),
-        vertex(m1() * 16440, 10050, m1() * 6951),
-        vertex(3668, 6900, m1() * 20677),
-        vertex(m1() * 4816, 10050, m1() * 17187),
-        vertex(18453, 6900, m1() * 10023),
-        vertex(10435, 10050, m1() * 14481),
-        vertex(0, 39000, 0),
-        vertex(11865, 25800, 1793),
-        vertex(9055, 27600, m1() * 4694),
-        vertex(1961, 25800, 11838),
-        vertex(7263, 27600, 7161),
-        vertex(m1() * 10653, 25800, 5523),
-        vertex(m1() * 4566, 27600, 9120),
-        vertex(m1() * 8545, 25800, m1() * 8424),
-        vertex(m1() * 10085, 27600, m1() * 1524),
-        vertex(5372, 25800, m1() * 10730),
-        vertex(m1() * 1666, 27600, m1() * 10062),
-        vertex(0, 45000, 0),
-        vertex(m1() * 4038, 36200, 6905),
-        vertex(3366, 37400, 5907),
-        vertex(m1() * 3961, 36200, m1() * 6950),
-        vertex(m1() * 6799, 37400, m1() * 38),
-        vertex(7999, 36200, 44),
-        vertex(3432, 37400, m1() * 5869),
-        vertex(0, 51000, m1() * 1125),
-        vertex(0, 51000, 1125),
-        vertex(7500, 51000, 0),
-        vertex(1820, 49677, 0),
-        vertex(2317, 58132, 0),
-        vertex(1820, 52322, 0),
-        vertex(m1() * 6067, 55408, 0),
-        vertex(m1() * 695, 53139, 0),
-        vertex(m1() * 6067, 46591, 0),
-        vertex(m1() * 2249, 51000, 0),
-        vertex(2317, 43867, 0),
-        vertex(m1() * 695, 48860, 0)
+        vertex(0, 4400, 0),
+        vertex(550, 0, 0),
+        vertex(275, 0, 476),
+        vertex(m1() * 274, 0, 476),
+        vertex(m1() * 549, 0, 0),
+        vertex(m1() * 275, 0, m1() * 476),
+        vertex(274, 0, m1() * 476),
+        vertex(0, 3000, 0),
+        vertex(1934, 690, 817),
+        vertex(1782, 1005, m1() * 87),
+        vertex(566, 690, 2022),
+        vertex(1179, 1005, 1339),
+        vertex(m1() * 1227, 690, 1703),
+        vertex(m1() * 311, 1005, 1757),
+        vertex(m1() * 2097, 690, 102),
+        vertex(m1() * 1568, 1005, 852),
+        vertex(m1() * 1387, 690, m1() * 1576),
+        vertex(m1() * 1644, 1005, m1() * 695),
+        vertex(366, 690, m1() * 2067),
+        vertex(m1() * 481, 1005, m1() * 1718),
+        vertex(1845, 690, m1() * 1002),
+        vertex(1043, 1005, m1() * 1448),
+        vertex(0, 3900, 0),
+        vertex(1186, 2580, 179),
+        vertex(905, 2760, m1() * 469),
+        vertex(196, 2580, 1183),
+        vertex(726, 2760, 716),
+        vertex(m1() * 1065, 2580, 552),
+        vertex(m1() * 456, 2760, 912),
+        vertex(m1() * 854, 2580, m1() * 842),
+        vertex(m1() * 1008, 2760, m1() * 152),
+        vertex(537, 2580, m1() * 1073),
+        vertex(m1() * 166, 2760, m1() * 1006),
+        vertex(0, 4500, 0),
+        vertex(m1() * 403, 3620, 690),
+        vertex(336, 3740, 590),
+        vertex(m1() * 396, 3620, m1() * 695),
+        vertex(m1() * 679, 3740, m1() * 3),
+        vertex(799, 3620, 4),
+        vertex(343, 3740, m1() * 586),
+        vertex(0, 5100, m1() * 112),
+        vertex(0, 5100, 112),
+        vertex(750, 5100, 0),
+        vertex(182, 4967, 0),
+        vertex(231, 5813, 0),
+        vertex(182, 5232, 0),
+        vertex(m1() * 606, 5540, 0),
+        vertex(m1() * 69, 5313, 0),
+        vertex(m1() * 606, 4659, 0),
+        vertex(m1() * 224, 5100, 0),
+        vertex(231, 4386, 0),
+        vertex(m1() * 69, 4886, 0)
         )
 
     val tri =
@@ -280,6 +290,21 @@ implement main () = let
         tri(41, 51, 44, 4),
         tri(42, 51, 52, 4),
         tri(42, 44, 51, 4)
+
+        // tri(53, 54, 57, 3),
+        // tri(57, 54, 58, 3),
+        // tri(54, 55, 59, 4),
+        // tri(54, 59, 58, 4),
+        // tri(55, 56, 60, 3),
+        // tri(55, 60, 59, 3),
+        // tri(53, 56, 60, 4),
+        // tri(53, 60, 57, 4),
+        // tri(57, 58, 61, 3),
+        // tri(59, 60, 62, 3),
+        // tri(57, 61, 62, 2),
+        // tri(57, 62, 60, 2),
+        // tri(59, 62, 61, 2),
+        // tri(59, 61, 58, 2)
         )
 in
     run_cga (55, 65, vert, tri) ;

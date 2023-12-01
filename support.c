@@ -73,7 +73,11 @@ int lowmask[] = {
 #define UINT32_CGA(P,AT) (((int)(P)) + (AT))
 
 void xwrite_color(char *cga, int y, int color, int upper_bound, int lower_bound) {
+  if (y < 0 || y > 199 || color < 0 || color > 8 || upper_bound < 0 || lower_bound >= 320) {
+    return;
+  }
   int fill_value = fill[color % 8];
+
   if (upper_bound <= lower_bound) {
     return;
   }
@@ -81,7 +85,7 @@ void xwrite_color(char *cga, int y, int color, int upper_bound, int lower_bound)
   if (lower_bound < 0) {
     lower_bound = 0;
   }
-  if (upper_bound > 320) {
+  if (upper_bound >= 320) {
     upper_bound = 320;
   }
 
@@ -129,7 +133,7 @@ void xwrite_color(char *cga, int y, int color, int upper_bound, int lower_bound)
 
 int xrand() { return rand(); }
 
-static void *scanlines[200] = { 0 };
+static void *scanlines[201] = { 0 };
 
 void preload_scanlines(void *ptr) {
   for (int i = 0; i < 200; i++) {
