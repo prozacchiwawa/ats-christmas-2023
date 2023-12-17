@@ -70,17 +70,17 @@ fn get_xa_xb (xa : int, xb : int) : (int, int) =
 
 
 
-fn insert_raster (color : int, depth : int, y : int, xa : int, xb : int) = let 
+fn insert_raster (color : int, depth : int, y : int, xa : int, xb : int, debug : bool) = let 
   val (x1, x2) = get_xa_xb (xa, xb)
   val old_list = get_line_ptr (y, NIL)
-  val new_list = insert_into (old_list, d_list_ent (color, x1, x2, depth))
+  val new_list = insert_into (old_list, d_list_ent (color, x1, x2, depth), debug)
   val empty_list = get_line_ptr (y, new_list)
 in
   consume_list empty_list ;
   consume_list old_list
 end
 
-fn make_triangle (color : int, ax : int, ay : int, bx : int, by : int, cx : int, cy : int, depth : int) : void = let
+fn make_triangle (color : int, ax : int, ay : int, bx : int, by : int, cx : int, cy : int, depth : int, debug : bool) : void = let
   val decomp = decompose_triangle (ax, ay, bx, by, cx, cy)
 in
   if decomp.cy = decomp.ay then
@@ -103,7 +103,7 @@ in
           let
             val () =
               if mid_y >= 0 && mid_y < 200 then
-                insert_raster (color, depth, mid_y, mid_lx, mid_rx)
+                insert_raster (color, depth, mid_y, mid_lx, mid_rx, debug)
               else
                 ()
                 
@@ -126,7 +126,7 @@ in
 
       val _ =
         if decomp.by >= 0 && decomp.by < 200 then
-          insert_raster (color, depth, decomp.by, decomp.bx, cx_at_by)
+          insert_raster (color, depth, decomp.by, decomp.bx, cx_at_by, debug)
         else
           ()
     in
@@ -144,6 +144,42 @@ in
     (ax * by) - (ay * bx)
 end
 
+fn zsort_triangle (a: struct_vertex, b: struct_vertex, c: struct_vertex) : (struct_vertex, struct_vertex, struct_vertex) =
+  if a.z < b.z && a.z < c.z then
+    (b,c,a)
+  else if b.z < a.z && b.z < c.z then
+    (a,c,b)
+  else
+    (a,b,c)
+
+fn clip_triangle (a: struct_vertex, b: struct_vertex, c: struct_vertex, f: bool): (bool, struct_vertex, struct_vertex, struct_vertex) = let
+  val (a1,b1,c1) = zsort_triangle (a,b,c)
+in
+  if c1.z >= 0 then
+    (false, a, b, c)
+  else if f && a1.z <> c1.z then
+    let
+      val pct_ac = (256 * a1.z) / (a1.z - c1.z)
+      val cx = ((a1.x - c1.x) * pct_ac) / 256
+      val cy = ((a1.y - c1.y) * pct_ac) / 256
+    in
+      (true,a1,b1,vertex(cx,cy,0))
+    end
+  else if a1.z <> c1.z && b1.z <> c1.z then
+    let
+      val pct_ac = (256 * a1.z) / (a1.z - c1.z)
+      val cax = ((a1.x - c1.x) * pct_ac) / 256
+      val cay = ((a1.y - c1.y) * pct_ac) / 256
+      val pct_bc = (256 * b1.z) / (b1.z - c1.z)
+      val cbx = ((b1.x - c1.x) * pct_bc) / 256
+      val cby = ((b1.x - c1.y) * pct_bc) / 256
+    in
+      (false,b1,vertex(cax,cay,0),vertex(cbx,cby,0))
+    end
+  else
+    (false,a,b,c)
+end
+
 fn draw_triangles
    {st : int | 0 <= st}
   (  start_tri: int(st),
@@ -151,7 +187,8 @@ fn draw_triangles
      location: struct_vertex,
      angle: int,
      vtx: !arrszref(struct_vertex),
-     tri: !arrszref(struct_triangle)
+     tri: !arrszref(struct_triangle),
+     debug: bool
   ): void = let
   fun do_one_triangle
     {idx : int | 0 <= idx}
@@ -170,10 +207,10 @@ fn draw_triangles
     val vtx_c : struct_vertex = transform_vtx (angle, location, get_any_vertex (last_vtx, vtx, the_tri_c))
     val depth = (vtx_a.z + vtx_b.z + vtx_c.z) / 3
     val _ =
-        if nonzero_vtx(vtx_a) && nonzero_vtx(vtx_b) && nonzero_vtx(vtx_c) && normal_z (vtx_a, vtx_b, vtx_c) > 0 then
-            make_triangle (the_tri.color, vtx_a.x, vtx_a.y, vtx_b.x, vtx_b.y, vtx_c.x, vtx_c.y, depth)
+        if nonzero_vtx(vtx_a) && nonzero_vtx(vtx_b) && nonzero_vtx(vtx_c) && normal_z (vtx_a, vtx_b, vtx_c) < 0 then
+          make_triangle (the_tri.color, vtx_a.x, vtx_a.y, vtx_b.x, vtx_b.y, vtx_c.x, vtx_c.y, depth, debug)
         else
-            ()
+          ()
   in
     if n <= 0 then
       ()

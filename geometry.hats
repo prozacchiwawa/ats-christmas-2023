@@ -368,24 +368,14 @@ fn transform_vtx (angle : int, location : struct_vertex, vtx : struct_vertex) : 
   val dz = vtx.z - location.z
   val imed1 = ((dx * dcos) - (dz * dsin)) / 256
   val zdist = 0 - (((dz * dcos) + (dx * dsin)) / 256)
-  val _ =
-    if zdist > 3000 then
-      begin
-        out.z := zdist ;
-        out.x := 160 + ((256 * imed1) / zdist) ;
-        out.y := 100 - ((256 * dy) / zdist)
-      end
-    else
-      begin
-        out.z := 0 ;
-        out.x := 0 ;
-        out.y := 0
-      end
 in
+  out.z := zdist ;
+  out.x := 160 + ((256 * imed1) / zdist) ;
+  out.y := 100 - ((256 * dy) / zdist) ;
   out
 end
 
-fn nonzero_vtx (vtx: struct_vertex) : bool = vtx.z > 3000
+fn nonzero_vtx (vtx: struct_vertex) : bool = vtx.z > 10
 
 fn vertex (x : int, y : int, z : int): struct_vertex = let
   var vtx : struct_vertex

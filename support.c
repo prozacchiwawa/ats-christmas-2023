@@ -55,6 +55,7 @@ int fill[] = {
   0x1111,
   0x2222,
   0x3333,
+  0xdbdb
 };
 
 int lowmask[] = {
@@ -76,7 +77,7 @@ void xwrite_color(char *cga, int y, int color, int upper_bound, int lower_bound)
   if (y < 0 || y > 199 || color < 0 || color > 8 || upper_bound < 0 || lower_bound >= 320) {
     return;
   }
-  int fill_value = fill[color % 8];
+  int fill_value = fill[color % 9];
 
   if (upper_bound <= lower_bound) {
     return;
