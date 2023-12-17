@@ -1,0 +1,24 @@
+<!DOCTYPE MeshLabDocument>
+<MeshLabProject>
+ <MeshGroup>
+  <MLMesh filename="tree.stl" label="tree.stl" visible="1">
+   <MLMatrix44>
+1 0 0 0 
+0 1 0 0 
+0 0 1 0 
+0 0 0 1 
+</MLMatrix44>
+   <RenderingOption wireColor="64 64 64 255" boxColor="234 234 234 255" wireWidth="1" pointColor="131 149 69 255" solidColor="192 192 192 255" pointSize="3">100001000000000000000100000001010100000010100000000100111011110000001001</RenderingOption>
+  </MLMesh>
+  <MLMesh filename="scene.stl" label="scene.stl" visible="1">
+   <MLMatrix44>
+1 0 0 0 
+0 1 0 0 
+0 0 1 0 
+0 0 0 1 
+</MLMatrix44>
+   <RenderingOption wireColor="64 64 64 255" boxColor="234 234 234 255" wireWidth="1" pointColor="131 149 69 255" solidColor="192 192 192 255" pointSize="3">100001000000000000000000000001010100000010100000000100111011110000001001</RenderingOption>
+  </MLMesh>
+ </MeshGroup>
+ <RasterGroup/>
+</MeshLabProject>
