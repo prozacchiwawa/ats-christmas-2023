@@ -43,8 +43,8 @@ let
   val empty_list = (make_zero_element ()) :: NIL
   val e1 = d_list_ent (1, 30, 100, 10) ;
   val e2 = d_list_ent (2, 50 + r, 120, 7) ;
-  val lst = insert_into (empty_list, e1, false)
-  val lst2 = insert_into (lst, e2, false)
+  val lst = insert_into (empty_list, e1)
+  val lst2 = insert_into (lst, e2)
 in
   consume_list lst ;
   consume_list empty_list ;
@@ -56,8 +56,8 @@ let
   val empty_list = (make_zero_element ()) :: NIL
   val e1 = d_list_ent (1, 30 + r, 100, 7) ;
   val e2 = d_list_ent (2, 50, 120, 10) ;
-  val lst = insert_into (empty_list, e1, false)
-  val lst2 = insert_into (lst, e2, false)
+  val lst = insert_into (empty_list, e1)
+  val lst2 = insert_into (lst, e2)
 in
   consume_list lst ;
   consume_list empty_list ;
@@ -74,7 +74,7 @@ fn make_random_triangle (n : int) = let
   val color = 1 + rand () % 3
   val depth = 1 + rand () % 100
 in
-  make_triangle (color, ax, ay, bx, by, cx, cy, depth, false)
+  make_triangle (color, ax, ay, bx, by, cx, cy, depth)
 end
 
 fn run_cga
@@ -102,31 +102,29 @@ fn run_cga
 
   val _ = display_scan_lines (cga, 199)
 
-  fun interp_key (new_kb: int, location: struct_vertex, angle: int, debug: bool): (struct_vertex, int, bool) =
+  fun interp_key (new_kb: int, location: struct_vertex, angle: int): (struct_vertex, int) =
       if new_kb = 119 then
           let
             val (dsin, dcos) = get_sin_cos (angle)
-            val new_x = location.x - dsin * 3
-            val new_z = location.z - dcos * 3
+            val new_x = location.x - dsin * 7
+            val new_z = location.z - dcos * 7
           in
-            (vertex(new_x, location.y, new_z), angle, debug)
+            (vertex(new_x, location.y, new_z), angle)
           end
       else if new_kb = 115 then
           let
             val (dsin, dcos) = get_sin_cos (angle)
-            val new_x = location.x + dsin * 3
-            val new_z = location.z + dcos * 3
+            val new_x = location.x + dsin * 7
+            val new_z = location.z + dcos * 7
           in
-            (vertex(new_x, location.y, new_z), angle, debug)
+            (vertex(new_x, location.y, new_z), angle)
           end
       else if new_kb = 100 then
-          (location, (angle + 248) % 256, debug)
+          (location, (angle + 238) % 256)
       else if new_kb = 97 then
-          (location, (angle + 12) % 256, debug)
-      else if new_kb = 92 then
-          (location, angle, ~debug)
+          (location, (angle + 18) % 256)
       else
-          (location, angle, debug)
+          (location, angle)
 
   fun loop_random_px
     ( vtx : !arrszref(struct_vertex),
@@ -134,24 +132,23 @@ fn run_cga
       location : struct_vertex,
       angle : int,
       n : int,
-      y : int,
-      debug : bool
+      y : int
     ) : void =
     if n >= 0 then
       let
 	      val new_kb = keep_running ()
-        val (new_location, new_angle, new_debug) = interp_key (new_kb, location, angle, debug)
+        val (new_location, new_angle) = interp_key (new_kb, location, angle)
       in
-        draw_triangles (max_tri, last_vtx, new_location, new_angle, vtx, tri, new_debug) ;
+        draw_triangles (max_tri, last_vtx, new_location, new_angle, vtx, tri) ;
         (* make_random_triangle y ; *)
         display_scan_lines (cga, 199) ;
         // println!(new_location.x, " ", new_location.z, " a ", new_angle) ;
-        loop_random_px (vtx, tri, new_location, new_angle, new_kb, y + 1, debug)
+        loop_random_px (vtx, tri, new_location, new_angle, new_kb, y + 1)
       end
     else
       ()
 in
-  loop_random_px (vert, tri, vertex(23289, 1000, 27749), 28, 1, 0, false) ;
+  loop_random_px (vert, tri, vertex(23289, 1000, 27749), 28, 1, 0) ;
   textmode (pf | cga)
 end
 

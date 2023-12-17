@@ -70,17 +70,17 @@ fn get_xa_xb (xa : int, xb : int) : (int, int) =
 
 
 
-fn insert_raster (color : int, depth : int, y : int, xa : int, xb : int, debug : bool) = let 
+fn insert_raster (color : int, depth : int, y : int, xa : int, xb : int) = let 
   val (x1, x2) = get_xa_xb (xa, xb)
   val old_list = get_line_ptr (y, NIL)
-  val new_list = insert_into (old_list, d_list_ent (color, x1, x2, depth), debug)
+  val new_list = insert_into (old_list, d_list_ent (color, x1, x2, depth))
   val empty_list = get_line_ptr (y, new_list)
 in
   consume_list empty_list ;
   consume_list old_list
 end
 
-fn make_triangle (color : int, ax : int, ay : int, bx : int, by : int, cx : int, cy : int, depth : int, debug : bool) : void = let
+fn make_triangle (color : int, ax : int, ay : int, bx : int, by : int, cx : int, cy : int, depth : int) : void = let
   val decomp = decompose_triangle (ax, ay, bx, by, cx, cy)
 in
   if decomp.cy = decomp.ay then
@@ -103,7 +103,7 @@ in
           let
             val () =
               if mid_y >= 0 && mid_y < 200 then
-                insert_raster (color, depth, mid_y, mid_lx, mid_rx, debug)
+                insert_raster (color, depth, mid_y, mid_lx, mid_rx)
               else
                 ()
                 
@@ -126,7 +126,7 @@ in
 
       val _ =
         if decomp.by >= 0 && decomp.by < 200 then
-          insert_raster (color, depth, decomp.by, decomp.bx, cx_at_by, debug)
+          insert_raster (color, depth, decomp.by, decomp.bx, cx_at_by)
         else
           ()
     in
@@ -187,8 +187,7 @@ fn draw_triangles
      location: struct_vertex,
      angle: int,
      vtx: !arrszref(struct_vertex),
-     tri: !arrszref(struct_triangle),
-     debug: bool
+     tri: !arrszref(struct_triangle)
   ): void = let
   fun do_one_triangle
     {idx : int | 0 <= idx}
@@ -208,7 +207,7 @@ fn draw_triangles
     val depth = (vtx_a.z + vtx_b.z + vtx_c.z) / 3
     val _ =
         if nonzero_vtx(vtx_a) && nonzero_vtx(vtx_b) && nonzero_vtx(vtx_c) && normal_z (vtx_a, vtx_b, vtx_c) < 0 then
-          make_triangle (the_tri.color, vtx_a.x, vtx_a.y, vtx_b.x, vtx_b.y, vtx_c.x, vtx_c.y, depth, debug)
+          make_triangle (the_tri.color, vtx_a.x, vtx_a.y, vtx_b.x, vtx_b.y, vtx_c.x, vtx_c.y, depth)
         else
           ()
   in

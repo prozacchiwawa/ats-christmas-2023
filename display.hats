@@ -45,16 +45,10 @@ in
   cr lst
 end
 
-fn debug_color (head: struct_d_list_ent, debug: bool): struct_d_list_ent = let
-  val color = if debug then 8 else head.color
-in
-  d_list_ent (color, head.until_x, head.until_x, head.depth)
-end
-
 fn insert_into
   {x : int | 0 <= x}
   (lst : !rclist_vt (struct_d_list_ent, x),
-   new_span : struct_d_list_ent, debug : bool
+   new_span : struct_d_list_ent
   ) : [y : int | 0 <= y] rclist_vt (struct_d_list_ent, y) = let
 
   (* head and new span have the same span *)
@@ -72,15 +66,14 @@ fn insert_into
 
   fun insert_into_inner
     {x : int | 0 <= x}
-    (lst : !rclist_vt (struct_d_list_ent, x), new_span : struct_d_list_ent, debug : bool
+    (lst : !rclist_vt (struct_d_list_ent, x), new_span : struct_d_list_ent
     ) : [y : int | 0 <= y] rclist_vt (struct_d_list_ent, y) = let
 
         fun weave_into_inner
                 {x : int | 0 <= x}
                 (new_span : struct_d_list_ent,
                  head : struct_d_list_ent,
-                 tail : !rclist_vt (struct_d_list_ent, x),
-                 debug : bool
+                 tail : !rclist_vt (struct_d_list_ent, x)
                 ) : [y : int | 0 <= y] rclist_vt (struct_d_list_ent, y) = let
 
           (* new_span is longer than head but they start at the same x *)
@@ -88,16 +81,15 @@ fn insert_into
                   {x : int | 0 <= x}
                   (new_span : struct_d_list_ent,
                    head : struct_d_list_ent,
-                   tail : !rclist_vt (struct_d_list_ent, x),
-                   debug : bool
+                   tail : !rclist_vt (struct_d_list_ent, x)
                   ) : [y : int | 0 <= y] rclist_vt (struct_d_list_ent, y) = begin
               if new_span.depth < head.depth then
-                  insert_into_inner(tail, new_span, debug)
+                  insert_into_inner(tail, new_span)
               else
                   let
                       val updated_span = d_list_ent (new_span.color, head.until_x, new_span.until_x, new_span.depth)
                   in
-                      head :: insert_into_inner(tail, updated_span, debug)
+                      head :: insert_into_inner(tail, updated_span)
                   end
           end
 
@@ -123,19 +115,18 @@ fn insert_into
                   {x : int | 0 <= x}
                   (new_span : struct_d_list_ent,
                    head : struct_d_list_ent,
-                   tail : !rclist_vt (struct_d_list_ent, x),
-                   debug : bool
+                   tail : !rclist_vt (struct_d_list_ent, x)
                   ) : [y : int | 0 <= y] rclist_vt (struct_d_list_ent, y) = begin
               if head.depth < new_span.depth then
                   (* head dominates new_span *)
-                  insert_into_inner(tail, head, debug)
+                  insert_into_inner(tail, head)
               else
                   (* head is broken by new span *)
                   let
                       val head_1 = d_list_ent (head.color, head.at_x, new_span.at_x, head.depth)
                       val head_2 = d_list_ent (head.color, new_span.until_x, head.until_x, head.depth)
                   in
-                      head_1 :: new_span :: insert_into_inner(tail, head_2, debug)
+                      head_1 :: new_span :: insert_into_inner(tail, head_2)
                   end
           end
 
@@ -144,20 +135,19 @@ fn insert_into
                   {x : int | 0 <= x}
                   (new_span : struct_d_list_ent,
                    head : struct_d_list_ent,
-                   tail : !rclist_vt (struct_d_list_ent, x),
-                   debug : bool
+                   tail : !rclist_vt (struct_d_list_ent, x)
                   ) : [y : int | 0 <= y] rclist_vt (struct_d_list_ent, y) = begin
               if head.depth < new_span.depth then
                   let
                       val updated_span = d_list_ent (new_span.color, new_span.at_x, head.at_x, new_span.depth)
                   in
-                      updated_span :: insert_into_inner(tail, head, debug)
+                      updated_span :: insert_into_inner(tail, head)
                   end
               else
                   let
                       val updated_head = d_list_ent (head.color, new_span.until_x, head.until_x, head.depth)
                   in
-                      new_span :: insert_into_inner(tail, updated_head, debug)
+                      new_span :: insert_into_inner(tail, updated_head)
                   end
           end
 in
@@ -167,23 +157,23 @@ in
         if head.until_x = new_span.until_x then
             handle_equal_spans (new_span, head, tail)
         else if head.until_x > new_span.until_x then
-            handle_start_overlap (head, new_span, tail, debug)
+            handle_start_overlap (head, new_span, tail)
         else (* head.until_x < new_span.until_x *)
-            handle_start_overlap (new_span, head, tail, debug)
+            handle_start_overlap (new_span, head, tail)
     else if head.at_x < new_span.at_x then
         if head.until_x = new_span.until_x then
             handle_end_overlap (head, new_span, tail)
         else if head.until_x > new_span.until_x then
-            handle_mid_overlap (new_span, head, tail, false)
+            handle_mid_overlap (new_span, head, tail)
         else (* head.until_x < new_span.until_x *)
-            handle_overlap (head, new_span, tail, false)
+            handle_overlap (head, new_span, tail)
     else (* head.at_x > new_span.at_x *)
         if head.until_x = new_span.until_x then
             handle_end_overlap (new_span, head, tail)
         else if head.until_x > new_span.until_x then
-            handle_overlap (new_span, head, tail, false)
+            handle_overlap (new_span, head, tail)
         else (* head.until_x < new_span.until_x *)           
-            handle_mid_overlap (head, new_span, tail, true)
+            handle_mid_overlap (head, new_span, tail)
   end
 
 in
@@ -198,12 +188,12 @@ in
       | rclist_vt_cons (head, tail) =>
         if head.until_x <= new_span.at_x then
           (* head is completely before new_span *)
-          head :: insert_into_inner (tail, new_span, debug)
+          head :: insert_into_inner (tail, new_span)
         else
-          weave_into_inner (new_span, head, tail, debug)
+          weave_into_inner (new_span, head, tail)
   end
 
-  val result = insert_into_inner (lst, new_span, debug)
+  val result = insert_into_inner (lst, new_span)
 in
   result
 end
