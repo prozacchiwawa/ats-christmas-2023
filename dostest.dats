@@ -142,13 +142,13 @@ fn run_cga
         draw_triangles (max_tri, last_vtx, new_location, new_angle, vtx, tri) ;
         (* make_random_triangle y ; *)
         display_scan_lines (cga, 199) ;
-        // println!(new_location.x, " ", new_location.z, " a ", new_angle) ;
+        (* println!(new_location.x, " ", new_location.z, " a ", new_angle) ; *)
         loop_random_px (vtx, tri, new_location, new_angle, new_kb, y + 1)
       end
     else
       ()
 in
-  loop_random_px (vert, tri, vertex(29289, 1000, 35049), 28, 1, 0) ;
+  loop_random_px (vert, tri, vertex(m1() * 25587, 1000, 35463), 219, 1, 0) ;
   textmode (pf | cga)
 end
 
