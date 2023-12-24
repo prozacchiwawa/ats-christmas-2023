@@ -148,7 +148,7 @@ fn run_cga
     else
       ()
 in
-  loop_random_px (vert, tri, vertex(23289, 1000, 27749), 28, 1, 0) ;
+  loop_random_px (vert, tri, vertex(29289, 1000, 35049), 28, 1, 0) ;
   textmode (pf | cga)
 end
 
